@@ -56,6 +56,9 @@ public class PatientService {
                     if (updatedPatient.getDob() != null) {
                         existingPatient.setDob(updatedPatient.getDob());
                     }
+                    if (updatedPatient.getGender() != null) {
+                        existingPatient.setGender(updatedPatient.getGender());
+                    }
 
                     // always update updatedAt/updatedBy
                     existingPatient.setUpdatedAt(LocalDate.now());
