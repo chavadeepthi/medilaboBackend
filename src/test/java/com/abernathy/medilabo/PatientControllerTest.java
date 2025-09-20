@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.abernathy.medilabo.controller.PatientController;
+import com.abernathy.medilabo.exception.PatientNotFoundException;
 import com.abernathy.medilabo.model.Patient;
 import com.abernathy.medilabo.service.PatientService;
 
@@ -18,19 +19,31 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.mockito.Mockito.*;
 
+
+@WebMvcTest(PatientController.class)
 public class PatientControllerTest {
 
+    @Autowired
     private MockMvc mockMvc;
 
-    @Mock
+//    @Mock
+//    private PatientService patientService;
+
+    @MockitoBean
     private PatientService patientService;
 
     @InjectMocks
@@ -48,7 +61,7 @@ public class PatientControllerTest {
         objectMapper.registerModule(new JavaTimeModule());          // support LocalDate
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS); // ISO format
 
-        mockMvc = MockMvcBuilders.standaloneSetup(patientController).build();
+       // mockMvc = MockMvcBuilders.standaloneSetup(patientController).build();
 //        MockitoAnnotations.openMocks(this);
 //        mockMvc = MockMvcBuilders.standaloneSetup(patientController).build();
 
@@ -68,6 +81,15 @@ public class PatientControllerTest {
         mockMvc.perform(get("/api/patients?id=1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.firstName").value("John"));
+    }
+    @Test
+    void testGetPatient_NotFound() throws Exception {
+        when(patientService.getPatient(1L)).thenThrow(new PatientNotFoundException(1L));
+
+        mockMvc.perform(get("/api/patients")
+                        .param("id", "1")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -94,6 +116,17 @@ public class PatientControllerTest {
     }
 
     @Test
+    void testUpdatePatient_NotFound() throws Exception {
+        when(patientService.updatePatient(eq(1L), any(Patient.class)))
+                .thenThrow(new PatientNotFoundException(1L));
+
+        mockMvc.perform(put("/api/patients?id=1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new Patient())))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void testDeletePatient_Success() throws Exception {
         doNothing().when(patientService).deletePatient(1L);
 
@@ -108,5 +141,33 @@ public class PatientControllerTest {
 
         mockMvc.perform(delete("/api/patients?id=1"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testGetAllPatients() throws Exception {
+        // Arrange: prepare test data
+        List<Patient> patients = Arrays.asList(
+                new Patient(1L, "Doe", "John", LocalDate.of(1990, 1, 1), "M", "123 Main St", "555-1234",
+                        LocalDate.of(2025, 1, 1), LocalDate.of(2025, 1, 1), "System", "System"),
+                new Patient(2L, "Smith", "Jane", LocalDate.of(1985, 5, 15), "F", "456 Oak Ave", "555-5678",
+                        LocalDate.of(2025, 1, 1), LocalDate.of(2025, 1, 1), "System", "System")
+        );
+
+        when(patientService.getAllPatients()).thenReturn(patients);
+
+        // Act & Assert: perform GET /patients/all and check
+        mockMvc.perform(get("/api/patients/all")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                // you can check JSON array size
+                .andExpect(jsonPath("$.length()").value(patients.size()))
+                // check some fields in first and second element
+                .andExpect(jsonPath("$[0].patientId").value(1L))
+                .andExpect(jsonPath("$[0].firstName").value("John"))
+                .andExpect(jsonPath("$[0].address").value("123 Main St"))
+                .andExpect(jsonPath("$[1].patientId").value(2L))
+                .andExpect(jsonPath("$[1].firstName").value("Jane"))
+                .andExpect(jsonPath("$[1].address").value("456 Oak Ave"));
     }
 }

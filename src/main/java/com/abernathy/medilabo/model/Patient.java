@@ -38,4 +38,6 @@ public class Patient {
     private LocalDate updatedAt;
     private String updatedBy;
     private String createdBy;
+
+
 }
