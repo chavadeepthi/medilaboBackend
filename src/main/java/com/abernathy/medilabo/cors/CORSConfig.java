@@ -12,7 +12,7 @@ public class CORSConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 // Apply CORS to all endpoints starting with /api/
                 registry.addMapping("/api/**")
-                        .allowedOrigins("http://localhost:8082") // your frontend URL
+                        .allowedOrigins("http://localhost:8080, \"http://localhost:8082") // your frontend URL
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH")
                         .allowedHeaders("*")
                         .allowCredentials(true);

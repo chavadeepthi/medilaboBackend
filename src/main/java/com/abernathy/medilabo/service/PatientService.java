@@ -80,8 +80,8 @@ public class PatientService {
 
     // PatientService
     public void deletePatient(Long id) {
-        Patient patient =  patientRepository.findById(id).
-                orElseThrow(()->new PatientNotFoundException(id));
+        Patient patient = patientRepository.findById(id).
+                orElseThrow(() -> new PatientNotFoundException(id));
         patientRepository.delete(patient);
 
 
