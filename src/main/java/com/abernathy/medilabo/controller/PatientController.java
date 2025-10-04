@@ -24,7 +24,10 @@ public class PatientController {
     @Autowired
     public PatientController(PatientService patientService)
 
-    {this.patientService = patientService}
+    {
+        this.patientService = patientService;
+
+    }
 
 
     /** Controller for displaying all patient records **/
