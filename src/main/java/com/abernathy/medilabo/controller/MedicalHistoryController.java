@@ -22,7 +22,7 @@ public class MedicalHistoryController {
     @PostMapping
     public MedicalHistoryNote addNote(@RequestBody MedicalHistoryNote note) {
         log.info("Adding note for Patient ID " + note.getPatientId());
-        return service.addNote(note.getPatientId(), note.getPhysician(), note.getNote());
+        return service.addNote(note.getPatientId(), note.getPhysician(), note.getNote(), note.getPatientName());
     }
 
     // GET: /api/patients/history?patientId=5

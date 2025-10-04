@@ -14,11 +14,12 @@ public class MedicalHistoryService {
         this.repository = repository;
     }
 
-    public MedicalHistoryNote addNote(Long patientId, String physician, String note) {
+    public MedicalHistoryNote addNote(Long patientId, String physician, String note, String patientName) {
         MedicalHistoryNote historyNote = new MedicalHistoryNote();
         historyNote.setPatientId(patientId);
         historyNote.setPhysician(physician);
         historyNote.setNote(note);
+        historyNote.setPatientName(patientName);
         return repository.save(historyNote);
     }
 

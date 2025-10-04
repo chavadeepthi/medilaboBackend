@@ -18,6 +18,7 @@ public class MedicalHistoryNote {
     private String physician;    // name or ID of physician
     private String note;         // the observation note
     private LocalDateTime createdAt = LocalDateTime.now();
+    private String patientName;
 
 
 
