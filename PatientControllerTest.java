@@ -1,6 +1,5 @@
 package com.abernathy.medilabo;
 
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -12,20 +11,17 @@ import com.abernathy.medilabo.service.PatientService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -33,37 +29,28 @@ import java.util.List;
 
 import static org.mockito.Mockito.*;
 
-
-@WebMvcTest(PatientController.class)
+@WebMvcTest(controllers = PatientController.class,
+        excludeAutoConfiguration = org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class)
 public class PatientControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-//    @Mock
-//    private PatientService patientService;
-
-    @MockitoBean
+    @MockBean
     private PatientService patientService;
 
     @InjectMocks
     private PatientController patientController;
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private ObjectMapper objectMapper;
 
     private Patient patient;
 
     @BeforeEach
     void setup() {
-        MockitoAnnotations.openMocks(this);
-
         objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());          // support LocalDate
+        objectMapper.registerModule(new JavaTimeModule()); // support LocalDate
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS); // ISO format
-
-       // mockMvc = MockMvcBuilders.standaloneSetup(patientController).build();
-//        MockitoAnnotations.openMocks(this);
-//        mockMvc = MockMvcBuilders.standaloneSetup(patientController).build();
 
         patient = new Patient();
         patient.setPatientId(1L);
@@ -82,6 +69,7 @@ public class PatientControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.firstName").value("John"));
     }
+
     @Test
     void testGetPatient_NotFound() throws Exception {
         when(patientService.getPatient(1L)).thenThrow(new PatientNotFoundException(1L));
@@ -136,7 +124,7 @@ public class PatientControllerTest {
 
     @Test
     void testDeletePatient_NotFound() throws Exception {
-        doThrow(new com.abernathy.medilabo.exception.PatientNotFoundException(1L))
+        doThrow(new PatientNotFoundException(1L))
                 .when(patientService).deletePatient(1L);
 
         mockMvc.perform(delete("/api/patients?id=1"))
@@ -145,7 +133,6 @@ public class PatientControllerTest {
 
     @Test
     void testGetAllPatients() throws Exception {
-        // Arrange: prepare test data
         List<Patient> patients = Arrays.asList(
                 new Patient(1L, "Doe", "John", LocalDate.of(1990, 1, 1), "M", "123 Main St", "555-1234",
                         LocalDate.of(2025, 1, 1), LocalDate.of(2025, 1, 1), "System", "System"),
@@ -155,14 +142,11 @@ public class PatientControllerTest {
 
         when(patientService.getAllPatients()).thenReturn(patients);
 
-        // Act & Assert: perform GET /patients/all and check
         mockMvc.perform(get("/api/patients/all")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                // you can check JSON array size
                 .andExpect(jsonPath("$.length()").value(patients.size()))
-                // check some fields in first and second element
                 .andExpect(jsonPath("$[0].patientId").value(1L))
                 .andExpect(jsonPath("$[0].firstName").value("John"))
                 .andExpect(jsonPath("$[0].address").value("123 Main St"))

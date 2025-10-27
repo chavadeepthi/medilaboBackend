@@ -10,5 +10,8 @@ COPY target/medilabo*.jar app.jar
 # Expose the port the app runs on
 EXPOSE 8081
 
+RUN mkdir -p /var/log/myapp && chmod 777 /var/log/myapp
+
 # Run the JAR file
-ENTRYPOINT ["java","-Dspring.profiles.active=docker","-jar", "/app/app.jar"]
+# ENTRYPOINT ["java","-Dspring.profiles.active=docker","-jar", "/app/app.jar"]
+ENTRYPOINT ["java","-Dspring.config.location=classpath:/application-docker.properties","-jar","/app/app.jar"]
