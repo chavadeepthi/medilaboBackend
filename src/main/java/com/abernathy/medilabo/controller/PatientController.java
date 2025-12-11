@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+/** Patient Rest API Controller */
 
 @RestController
 @RequestMapping("/patients")
@@ -24,6 +25,8 @@ public class PatientController {
         this.patientService = patientService;
     }
 
+    /** Get All Patient records for home page */
+
     @GetMapping("/all")
     public List<Patient> getAllPatients() {
         log.info("Fetching all patient records.");
@@ -32,6 +35,7 @@ public class PatientController {
         return patients;
     }
 
+    /** Get Patient details by ID */
     @GetMapping
     public ResponseEntity<Patient> getPatient(@RequestParam Long id) {
         log.info("Attempting to retrieve patient with ID: {}", id);
@@ -44,7 +48,7 @@ public class PatientController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
-
+/** Create new Patient Record */
     @PostMapping
     public ResponseEntity<Patient> createPatient(@RequestBody Patient patient) {
         log.info("Creating new patient record: {}", patient);
@@ -52,7 +56,7 @@ public class PatientController {
         log.info("Successfully created patient record with ID: {}");
         return ResponseEntity.status(HttpStatus.CREATED).body(savedPatient);
     }
-
+    /** Update Patient details by ID */
     @PutMapping
     public ResponseEntity<Patient> updatePatient(@RequestParam Long id, @RequestBody Patient updatedPatient) {
         log.info("Attempting to update patient with ID: {}", id);
@@ -65,7 +69,7 @@ public class PatientController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
-
+/** Delete Patient Record */
     @DeleteMapping
     public ResponseEntity<String> deletePatient(@RequestParam Long id) {
         log.info("Attempting to delete patient with ID: {}", id);
